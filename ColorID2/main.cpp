@@ -175,7 +175,7 @@ void CreateOverlayWindow(int screenIdx) {
     UpdateWindow(hwndOverlay);
 
     // Start overlay update loop with mouse position tracking
-    std::thread([=]() {
+    /*std::thread([=]() {
         POINT lastPos = { -1, -1 };
         while (appRunning && hwndOverlay) {
             POINT currentPos;
@@ -186,7 +186,34 @@ void CreateOverlayWindow(int screenIdx) {
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
-    }).detach();
+    }).detach();*/
+    // Start overlay update loop with mouse position tracking
+    std::thread([=]() {
+        POINT lastPos = { -1, -1 };
+        auto lastMoveTime = std::chrono::steady_clock::now();
+        bool overlayUpdated = false;
+
+        while (appRunning && hwndOverlay) {
+            POINT currentPos;
+            GetCursorPos(&currentPos);
+
+            if (currentPos.x != lastPos.x || currentPos.y != lastPos.y) {
+                lastPos = currentPos;
+                lastMoveTime = std::chrono::steady_clock::now();
+                overlayUpdated = false; // Reset flag when mouse moves
+            }
+
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - lastMoveTime).count();
+
+            if (!overlayUpdated && elapsed >= 3) {
+                UpdateOverlay();
+                overlayUpdated = true;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        }).detach();
 }
 
 #undef max
@@ -264,17 +291,28 @@ LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         int width = snapshotBitmap->GetWidth();
         int height = snapshotBitmap->GetHeight();
 
+        const double maxDistance = 50.0;
         Bitmap overlay(width, height, PixelFormat32bppARGB);
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 Color pix;
                 snapshotBitmap->GetPixel(x, y, &pix);
                 double dist = ColorDistance(underCursor, pix);
-                BYTE alpha = (BYTE)(dist < 50 ? 255 - (dist * 100) : 230);
-                overlay.SetPixel(x, y, Color(alpha, 0, 0, 0));
+                //BYTE alpha = (BYTE)(dist < 50 ? 255 - (dist * 30) : 230);
+                double a = 0.0;
+                double b = (dist / maxDistance) * 255.0;
+                const double mx = (((a) > (b)) ? (a) : (b));
+                a = 255.0;
+                b = mx;
+                const double mn = (((a) < (b)) ? (a) : (b));
+
+                BYTE alpha = (BYTE)(mn);
+                //overlay.SetPixel(x, y, Color(alpha, pix.GetR(), pix.GetG(), pix.GetB()));
+                overlay.SetPixel(x, y, Color(alpha, 0,0,0));
             }
         }
 
+        graphics.SetCompositingMode(CompositingModeSourceOver); // Ensure alpha is respected
         graphics.DrawImage(&overlay, 0, 0);
         EndPaint(hwnd, &ps);
     }

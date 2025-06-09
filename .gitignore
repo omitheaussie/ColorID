@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 # Visual Studio files
 Debug/
+.vs/
 *.suo
 *.user
 *.pdb
