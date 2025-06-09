@@ -19,6 +19,7 @@ Debug/
 # Ignore everything in ColorID2 folder except specific project files
 ColorID2/*
 !ColorID2/main.cpp
+!ColorID2/*.h
 !ColorID2/*.vcxproj
 !ColorID2/*.vcxproj.filters
 !ColorID2/*.sln
