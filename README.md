@@ -1,6 +1,6 @@
 # Screen Color Highlighter (Windows Overlay App)
 
-A Windows 11 desktop application that takes a snapshot of a selected screen and overlays it full-screen, making the screen appear frozen. It then tracks the mouse cursor color and highlights matching regions in the snapshot in real time.
+A Windows 11 desktop application that takes a snapshot of a selected screen and overlays it full-screen, making the screen appear frozen. It then tracks the mouse cursor color and highlights matching regions in the snapshot in real time. This is particularly usefull for people with limited color vision (color blindness) or even to those with good color vision and want to look at complicated visuals with many colors.
 
 ---
 
